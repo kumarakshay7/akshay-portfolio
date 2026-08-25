@@ -1,10 +1,9 @@
 import streamlit as st
-from pathlib import Path
-import base64
-from pathlib import Path
-import streamlit as st
+import plotly.graph_objects as go
+import pandas as pd
+import numpy as np
 import pymupdf
-pymupdf.open(...)
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -993,9 +992,9 @@ if st.session_state.show_resume_preview and RESUME_EXISTS:
 
     try:
 
-        import fitz
+        import pymupdf
 
-        pdf_document = fitz.open(
+        pdf_document = pymupdf.open(
             stream=RESUME_DATA,
             filetype="pdf"
         )
@@ -1011,7 +1010,7 @@ if st.session_state.show_resume_preview and RESUME_EXISTS:
                 page = pdf_document.load_page(page_number)
 
                 pix = page.get_pixmap(
-                    matrix=fitz.Matrix(1.5, 1.5),
+                    matrix=pymupdf.Matrix(1.5, 1.5),
                     alpha=False
                 )
 
@@ -1061,7 +1060,6 @@ if st.session_state.show_resume_preview and RESUME_EXISTS:
         '</div>',
         unsafe_allow_html=True
     )
-
 
 # =========================================================
 # PROJECTS
