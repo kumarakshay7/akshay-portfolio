@@ -3,6 +3,7 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 import pymupdf
+import base64
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
