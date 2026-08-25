@@ -3,6 +3,8 @@ from pathlib import Path
 import base64
 from pathlib import Path
 import streamlit as st
+import pymupdf
+pymupdf.open(...)
 
 BASE_DIR = Path(__file__).resolve().parent
 
