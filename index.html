@@ -194,6 +194,15 @@
 </section>
 </main>
 
-<footer><div>© 2026 Akshay Kumar · Data Analytics · Machine Learning · Generative AI</div><a class="back-home" href="#top" aria-label="Back to home">↑ Back to Home</a></footer>
+<footer><div>© 2026 Akshay Kumar · Data Analytics · Machine Learning · Generative AI</div></footer>
+<a class="back-home" href="#top" aria-label="Back to home">↑ Home</a>
+<script>
+  const backHome = document.querySelector('.back-home');
+  const toggleBackHome = () => {
+    backHome.classList.toggle('visible', window.scrollY > 500);
+  };
+  window.addEventListener('scroll', toggleBackHome, { passive: true });
+  toggleBackHome();
+</script>
 </body>
 </html>
