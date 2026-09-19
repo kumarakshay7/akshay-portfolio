@@ -163,7 +163,8 @@
           'Message:\n' + message
         );
 
-        window.location.href = 'mailto:akshaykumar7280@gmail.com?subject=' + subject + '&body=' + body;
+        const gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1&to=akshaykumar7280@gmail.com&su=' + subject + '&body=' + body;
+        window.open(gmailUrl, '_blank', 'noopener,noreferrer');
       });
     </script>
   </div>
