@@ -1,2056 +1,686 @@
-import streamlit as st
-import plotly.graph_objects as go
-import pandas as pd
-import numpy as np
-import pymupdf
 import base64
+import smtplib
+from email.message import EmailMessage
 from pathlib import Path
 
+import streamlit as st
+
 BASE_DIR = Path(__file__).resolve().parent
+ASSET_DIR = BASE_DIR / "assets" / "images"
+RESUME_PATH = BASE_DIR / "resume.pdf"
 
-PROJECT_IMAGES = {
-    "mmm": BASE_DIR / "assets" / "images" / "mmm.png",
-    "vehicle": BASE_DIR / "assets" / "images" / "vehicle.png",
-    "rag": BASE_DIR / "assets" / "images" / "rag.png",
-}
+st.set_page_config(
+    page_title="Akshay Kumar | Data Analyst & AI/ML",
+    page_icon="AK",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
 
-
-
-# =========================================================
-# PROJECT IMAGES
-# =========================================================
-
-
-
-
-
-ASSET_DIR = Path(__file__).resolve().parent / "assets" / "images"
-PROJECT_IMAGE_FILES = {
-    "mmm": ASSET_DIR / "mmm.png",
-    "vehicle": ASSET_DIR / "vehicle.png",
-    "rag": ASSET_DIR / "rag.png",
-}
-
-def image_data_uri(path):
-    """Return a browser-safe data URI for a local project image."""
+# -------------------------------------------------------------------
+# Helpers
+# -------------------------------------------------------------------
+def image_data_uri(path: Path) -> str:
     if not path.exists() or path.stat().st_size == 0:
         return ""
     encoded = base64.b64encode(path.read_bytes()).decode("utf-8")
     return f"data:image/png;base64,{encoded}"
 
+
 PROJECT_IMAGES = {
-    key: image_data_uri(path)
-    for key, path in PROJECT_IMAGE_FILES.items()
+    "mmm": image_data_uri(ASSET_DIR / "mmm.png"),
+    "vehicle": image_data_uri(ASSET_DIR / "vehicle.png"),
+    "rag": image_data_uri(ASSET_DIR / "rag.png"),
 }
 
-# Resume preview is rendered as an image using PyMuPDF.
-# This works across Streamlit versions and avoids Chrome PDF iframe blocking.
-
-# =========================================================
-# RESUME FILE
-# =========================================================
-RESUME_PATH = Path(__file__).resolve().parent / "resume.pdf"
 RESUME_EXISTS = RESUME_PATH.exists() and RESUME_PATH.stat().st_size > 0
 RESUME_DATA = RESUME_PATH.read_bytes() if RESUME_EXISTS else b""
 
-# =========================================================
-# PROJECT GITHUB REPOSITORIES
-# =========================================================
-# Replace these placeholder URLs with your actual GitHub
-# repository URLs. The buttons are ready to use.
-PROJECT_REPOS = {
-    "mmm": "https://github.com/",
-    "vehicle": "https://github.com/kumarakshay7/Annotation",
-    "rag": "https://github.com/kumarakshay7/Azure-RAG-Assignment",
-}
+GITHUB = "https://github.com/kumarakshay7"
+LINKEDIN = "https://www.linkedin.com/in/akshaykumar17/"
+EMAIL = "akshaykumar7280@gmail.com"
+PHONE = "+91 77620 40867"
 
-# =========================================================
-# RESUME PREVIEW
-# =========================================================
-if "show_resume_preview" not in st.session_state:
-    st.session_state.show_resume_preview = False
+PROJECTS = [
+    {
+        "number": "01",
+        "category": "MARKETING ANALYTICS",
+        "title": "Marketing Mix Modeling",
+        "subtitle": "Budget allocation & ROI measurement",
+        "image": "mmm",
+        "description": (
+            "Built an end-to-end Marketing Mix Modeling workflow using OLS "
+            "regression, feature engineering, VIF checks, validation and "
+            "channel contribution analysis across 500K+ records and 5 marketing channels."
+        ),
+        "stack": ["Python", "OLS Regression", "Pandas", "VIF", "Time Series"],
+        "metrics": [("500K+", "records"), ("R² 0.85", "model fit"), ("+25%", "budget efficiency"), ("+12%", "ROI")],
+        "link": None,
+        "link_label": "Professional case study",
+    },
+    {
+        "number": "02",
+        "category": "GENERATIVE AI · RAG",
+        "title": "Enterprise RAG AI Assistant",
+        "subtitle": "Grounded document question answering",
+        "image": "rag",
+        "description": (
+            "Implemented an enterprise RAG pipeline with document ingestion, "
+            "chunking, embeddings, semantic/vector retrieval and grounded response generation "
+            "using Azure OpenAI, Azure AI Search, LangChain and Streamlit."
+        ),
+        "stack": ["Azure OpenAI", "Azure AI Search", "LangChain", "Embeddings", "Streamlit"],
+        "metrics": [("E2E", "RAG pipeline"), ("Vector", "retrieval"), ("Semantic", "search"), ("Grounded", "responses")],
+        "link": "https://github.com/kumarakshay7/Azure-RAG-Assignments",
+        "link_label": "View GitHub repository",
+    },
+    {
+        "number": "03",
+        "category": "COMPUTER VISION",
+        "title": "Vehicle Detection & Tracking",
+        "subtitle": "YOLOv8-based video analytics",
+        "image": "vehicle",
+        "description": (
+            "Built a computer vision workflow for vehicle detection and tracking using YOLOv8 "
+            "and OpenCV, including image/video preprocessing, model training and inference."
+        ),
+        "stack": ["Python", "YOLOv8", "OpenCV", "Deep Learning"],
+        "metrics": [("YOLOv8", "detector"), ("Video", "inference"), ("OpenCV", "vision"), ("C5i", "project")],
+        "link": None,
+        "link_label": "Professional case study",
+    },
+    {
+        "number": "04",
+        "category": "ML ENGINEERING",
+        "title": "YOLO11 Model Optimization",
+        "subtitle": "Training, ONNX export & INT8 evaluation",
+        "image": None,
+        "description": (
+            "Completed an object-detection engineering workflow covering model training, "
+            "evaluation, ONNX export, FP32 validation, INT8 quantization and failure analysis."
+        ),
+        "stack": ["YOLO11", "PyTorch", "ONNX", "INT8", "Python"],
+        "metrics": [("YOLO11", "model"), ("ONNX", "deployment"), ("INT8", "quantization"), ("ML", "evaluation")],
+        "link": "https://github.com/kumarakshay7/artikate-cv-ml-engineer-assignment",
+        "link_label": "View GitHub repository",
+    },
+    {
+        "number": "05",
+        "category": "POWER PLATFORM · BI",
+        "title": "Power Platform & BI Automation",
+        "subtitle": "Workflow automation & decision support",
+        "image": None,
+        "description": (
+            "Designed Power Apps and Power Automate solutions with SharePoint integration, "
+            "Copilot Studio and BI reporting to streamline operational workflows and support faster decisions."
+        ),
+        "stack": ["Power Apps", "Power Automate", "SharePoint", "Copilot Studio", "Power BI"],
+        "metrics": [("35%", "workflow efficiency"), ("8%", "operational revenue"), ("Power Apps", "solutions"), ("BI", "reporting")],
+        "link": None,
+        "link_label": "Professional case study",
+    },
+]
 
-def show_resume_preview():
-    if not RESUME_EXISTS:
-        st.error("Resume PDF not found. Put a valid non-empty file named 'resume.pdf' next to app.py.")
-        return
 
-    st.session_state.show_resume_preview = True
-
-
-# =========================================================
-# PAGE CONFIG
-# =========================================================
-
-st.set_page_config(
-    page_title="Akshay Kumar | Data Analyst",
-    page_icon="📊",
-    layout="wide"
-)
-
-if not RESUME_EXISTS:
-    st.warning("Resume PDF not found. Put a valid non-empty file named 'resume.pdf' next to app.py.")
-
-
-# =========================================================
-# CUSTOM CSS
-# =========================================================
-
-
-st.markdown("""
+# -------------------------------------------------------------------
+# CSS
+# -------------------------------------------------------------------
+st.markdown(
+    """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 :root {
-    --bg: #08090b;
-    --panel: #10141b;
-    --panel-2: #0c0f14;
-    --line: #1b2330;
-    --line-soft: #151b24;
-    --text: #f7f9fc;
-    --muted: #91a6c0;
-    --muted-2: #7f94ad;
-    --blue: #3d86ff;
-    --blue-bright: #19cfff;
+    --bg: #07090d;
+    --panel: #0d1118;
+    --panel-2: #101722;
+    --line: #1c2736;
+    --line-soft: rgba(255,255,255,.07);
+    --text: #f5f7fb;
+    --muted: #8fa0b5;
+    --blue: #4b8dff;
+    --cyan: #35d5ff;
+    --green: #58d68d;
 }
 
 html { scroll-behavior: smooth; }
 
 .stApp {
     background:
-        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px),
-        var(--bg);
-    background-size: 72px 72px;
+      radial-gradient(circle at 15% 8%, rgba(75,141,255,.10), transparent 28%),
+      radial-gradient(circle at 85% 20%, rgba(53,213,255,.06), transparent 24%),
+      linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px),
+      var(--bg);
+    background-size: auto, auto, 72px 72px, 72px 72px;
     color: var(--text);
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
 }
 
-.block-container {
-    max-width: 1400px;
-    padding-top: 0.7rem;
-    padding-bottom: 0;
-}
-
+.block-container { max-width: 1240px; padding: 0 2rem 3rem; }
 #MainMenu, footer, header { visibility: hidden; }
 
-/* ========================= NAV ========================= */
-.nav-shell {
-    min-height: 64px;
-    border-bottom: 1px solid rgba(255,255,255,.045);
+a { transition: .2s ease; }
+
+/* NAV */
+.nav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    min-height: 68px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--line-soft);
+    background: rgba(7,9,13,.82);
+    backdrop-filter: blur(16px);
 }
-.nav-logo {
+.nav-brand {
     font-family: 'Space Grotesk', sans-serif;
     font-size: 23px;
     font-weight: 700;
     color: #fff;
-    padding-top: 3px;
 }
-.nav-logo span { color: var(--blue); }
-
-.nav-item {
-    text-align: center;
-    padding-top: 11px;
-    font-size: 14px;
-    font-weight: 500;
+.nav-brand span { color: var(--blue); }
+.nav-links { display:flex; gap: 28px; align-items:center; }
+.nav-links a { color:#9aa9bc; text-decoration:none; font-size:14px; }
+.nav-links a:hover { color:#fff; }
+.nav-cta {
+    color:#fff !important;
+    border:1px solid #29456f;
+    background:#0e1827;
+    border-radius:8px;
+    padding:9px 14px;
 }
-.nav-item a {
-    color: #8fa0b7;
-    text-decoration: none;
-    transition: .2s ease;
-}
-.nav-item a:hover { color: #fff; }
-
-.nav-button button {
-    min-height: 40px !important;
-    height: 40px !important;
-    border-radius: 8px !important;
-    padding: 0 15px !important;
-    background: #10141b !important;
-    color: #d8e4f3 !important;
-    border: 1px solid #1d2634 !important;
-}
-.nav-button button:hover {
-    border-color: #3d86ff !important;
-    color: #fff !important;
+@media(max-width:850px) {
+    .nav-links a:not(.nav-cta) { display:none; }
 }
 
-/* ========================= HERO ========================= */
-.hero-space { height: 125px; }
-
-.hero-grid {
-    min-height: 720px;
+/* HERO */
+.hero { padding: 105px 0 85px; }
+.kicker {
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    color:#a9bad0;
+    font-size:12px;
+    letter-spacing:2.5px;
+    text-transform:uppercase;
+    font-weight:700;
 }
-
-.eyebrow {
-    color: #8ca5c4;
-    letter-spacing: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    margin-bottom: 24px;
+.kicker-dot {
+    width:7px; height:7px; border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 16px rgba(88,214,141,.8);
 }
-
-.hero-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(52px, 5vw, 72px);
-    line-height: 1.02;
-    font-weight: 700;
-    letter-spacing: -2.8px;
-    color: #fff;
+.hero h1 {
+    font-family:'Space Grotesk', sans-serif;
+    font-size:clamp(54px,8vw,94px);
+    line-height:.96;
+    letter-spacing:-4px;
+    margin:22px 0 16px;
+    color:#fff;
 }
-
-.hero-subtitle {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(30px, 3vw, 40px);
-    line-height: 1.12;
-    font-weight: 600;
-    letter-spacing: -1.5px;
-    color: #91a6c0;
-    margin-top: 17px;
+.hero h1 span { color:var(--blue); }
+.hero h2 {
+    font-family:'Space Grotesk', sans-serif;
+    font-size:clamp(25px,3.2vw,40px);
+    line-height:1.15;
+    letter-spacing:-1.4px;
+    color:#93a6bf;
+    margin:0;
 }
-
-.hero-text {
-    color: #91a6c0;
-    font-size: 17px;
-    line-height: 1.85;
-    max-width: 760px;
-    margin-top: 25px;
+.hero-copy {
+    max-width:720px;
+    margin-top:26px;
+    color:#91a1b5;
+    font-size:17px;
+    line-height:1.8;
 }
-
-.hero-actions {
-    margin-top: 32px;
-    width: 100%;
-}
-
-.hero-actions [data-testid="column"] {
-    display: flex;
-    align-items: stretch;
-}
-
-.hero-actions button,
+.hero-actions { margin-top:30px; display:flex; gap:10px; flex-wrap:wrap; }
 .hero-actions a {
-    width: 100% !important;
-    min-height: 48px !important;
-    height: 48px !important;
-    border-radius: 7px !important;
-    box-sizing: border-box !important;
+    display:inline-flex; align-items:center; justify-content:center;
+    min-height:46px; padding:0 18px; border-radius:8px;
+    text-decoration:none; font-weight:700; font-size:14px;
+}
+.btn-primary { background:var(--blue); color:#fff !important; }
+.btn-secondary { border:1px solid #26364d; background:#0d141e; color:#dce6f2 !important; }
+.btn-secondary:hover { border-color:#4b8dff; }
+.hero-note { color:#687b93; font-size:13px; margin-top:17px; }
+
+/* HERO STATS */
+.stat-panel {
+    height:100%;
+    min-height:390px;
+    padding:27px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:linear-gradient(145deg, rgba(16,23,34,.98), rgba(9,13,19,.98));
+    box-shadow:0 25px 80px rgba(0,0,0,.25);
+}
+.stat-head { display:flex; justify-content:space-between; align-items:center; }
+.stat-label { color:#8499b2; font-size:11px; letter-spacing:2px; font-weight:700; }
+.stat-live { color:var(--green); font-size:11px; font-weight:700; }
+.stat-title {
+    font-family:'Space Grotesk',sans-serif; font-size:29px; font-weight:700;
+    margin:13px 0 25px;
+}
+.big-stat {
+    border-top:1px solid var(--line);
+    padding:20px 0;
+    display:flex; justify-content:space-between; gap:20px;
+}
+.big-number { color:#fff; font-family:'Space Grotesk',sans-serif; font-size:32px; font-weight:700; }
+.big-label { color:#7e91aa; font-size:13px; margin-top:5px; text-align:right; }
+.stat-foot {
+    margin-top:12px; padding:13px 14px; border-radius:9px;
+    background:#0a111a; border:1px solid #172334; color:#8ea2bb; font-size:13px;
 }
 
-.hero-actions .stButton,
-.hero-actions .stDownloadButton,
-.hero-actions .stLinkButton {
-    width: 100% !important;
-}
-
-.hero-actions .project-view-button {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 0 12px !important;
-    margin: 0 !important;
-}
-
-.hero-actions .hero-icon button {
-    min-width: 48px !important;
-    padding: 0 10px !important;
-    font-size: 17px !important;
-}
-
-.primary-button button {
-    background: var(--blue) !important;
-    color: #fff !important;
-    border-color: var(--blue) !important;
-    font-weight: 700 !important;
-}
-.primary-button button:hover {
-    background: #2f74e7 !important;
-}
-
-.hero-icon button {
-    min-width: 48px !important;
-    padding: 0 10px !important;
-    font-size: 17px !important;
-}
-
-.location {
-    color: #7f94ad;
-    margin-top: 35px;
-    font-size: 15px;
-}
-
-/* ========================= IMPACT ========================= */
-.impact-card {
-    position: relative;
-    background: #10141b;
-    border: 1px solid #202938;
-    border-radius: 12px;
-    padding: 34px 36px 36px;
-    min-height: 625px;
-    overflow: hidden;
-    box-shadow: 0 18px 50px rgba(0,0,0,.16);
-}
-
-.impact-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: relative;
-    z-index: 3;
-}
-
-.impact-label {
-    color: #8ca5c4;
-    letter-spacing: 4px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.impact-growth {
-    color: #00c9f5;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.impact-title {
-    color: #ffffff;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 34px;
-    line-height: 1.1;
-    font-weight: 700;
-    margin-top: 10px;
-    letter-spacing: -1px;
-    position: relative;
-    z-index: 3;
-}
-
-/* CSS-only chart. No SVG, JavaScript or Plotly is used here. */
-.impact-chart {
-    position: relative;
-    height: 260px;
-    margin: 18px 0 10px;
-    overflow: hidden;
-}
-
-.impact-chart-grid {
-    position: absolute;
-    inset: 0;
-    opacity: .48;
-    background-image:
-        linear-gradient(rgba(49,63,82,.32) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(49,63,82,.25) 1px, transparent 1px);
-    background-size: 25% 25%;
-}
-
-.impact-chart-area {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 78%;
-    background: linear-gradient(
-        to bottom,
-        rgba(61,134,255,.18),
-        rgba(61,134,255,.015)
-    );
-    clip-path: polygon(
-        0% 70%,
-        8% 62%,
-        16% 66%,
-        25% 49%,
-        34% 40%,
-        42% 45%,
-        51% 30%,
-        60% 18%,
-        68% 24%,
-        76% 8%,
-        84% -1%,
-        92% -10%,
-        100% -20%,
-        100% 100%,
-        0% 100%
-    );
-}
-
-.impact-chart-line {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-}
-
-/* Individual line segments create the smooth rising trend without SVG. */
-.impact-chart-line span {
-    position: absolute;
-    height: 3px;
-    background: #3d86ff;
-    border-radius: 999px;
-    transform-origin: left center;
-    box-shadow: 0 0 8px rgba(61,134,255,.18);
-}
-
-.chart-seg-1 { left: 0%;  top: 70%; width: 9%;  transform: rotate(-12deg); }
-.chart-seg-2 { left: 8%;  top: 62%; width: 9%;  transform: rotate(5deg); }
-.chart-seg-3 { left: 16%; top: 66%; width: 11%; transform: rotate(-24deg); }
-.chart-seg-4 { left: 25%; top: 49%; width: 10%; transform: rotate(-13deg); }
-.chart-seg-5 { left: 34%; top: 40%; width: 9%;  transform: rotate(8deg); }
-.chart-seg-6 { left: 42%; top: 45%; width: 11%; transform: rotate(-29deg); }
-.chart-seg-7 { left: 51%; top: 30%; width: 11%; transform: rotate(-14deg); }
-.chart-seg-8 { left: 60%; top: 18%; width: 9%;  transform: rotate(9deg); }
-.chart-seg-9 { left: 68%; top: 24%; width: 10%; transform: rotate(-26deg); }
-.chart-seg-10 { left: 76%; top: 8%; width: 11%; transform: rotate(-14deg); }
-.chart-seg-11 { left: 84%; top: -1%; width: 10%; transform: rotate(-13deg); }
-.chart-seg-12 { left: 92%; top: -10%; width: 10%; transform: rotate(-13deg); }
-
-.impact-metrics {
-    position: relative;
-    z-index: 3;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.metric-box {
-    background: #0a0d12;
-    border: 1px solid #151d2a;
-    border-radius: 8px;
-    padding: 18px 17px;
-    min-height: 76px;
-}
-
-.metric-number {
-    color: #3d86ff;
-    font-size: 24px;
-    font-weight: 800;
-    line-height: 1.1;
-}
-
-.metric-label {
-    color: #91a6c0;
-    font-size: 13px;
-    margin-top: 8px;
-}
-
-@media (max-width: 900px) {
-    .impact-card {
-        min-height: auto;
-        padding: 28px 24px 26px;
-    }
-
-    .impact-title {
-        font-size: 30px;
-    }
-
-    .impact-chart {
-        height: 220px;
-    }
-}
-
-
-
-/* ========================= GENERAL SECTIONS ========================= */
-.section {
-    margin-top: 90px;
-    margin-bottom: 20px;
-}
-.section-label {
-    color: #8ca5c4;
-    letter-spacing: 4px;
-    font-size: 12px;
-    font-weight: 600;
-}
+/* SECTION */
+.section { padding-top:85px; scroll-margin-top:85px; }
+.section-kicker { color:#6f88a5; font-size:11px; letter-spacing:3px; font-weight:700; }
 .section-title {
-    font-family: 'Space Grotesk', sans-serif;
-    color: #fff;
-    font-size: 43px;
-    font-weight: 700;
-    letter-spacing: -1.5px;
-    margin-top: 12px;
+    font-family:'Space Grotesk',sans-serif; color:#fff;
+    font-size:clamp(34px,4vw,52px); line-height:1.05;
+    letter-spacing:-2px; margin:11px 0 13px;
 }
-.section-description {
-    color: #91a6c0;
-    font-size: 17px;
-    line-height: 1.7;
-    max-width: 850px;
-}
+.section-copy { max-width:780px; color:#8496ad; font-size:16px; line-height:1.75; }
 
-/* ========================= CARDS ========================= */
-.project-card, .experience-card, .skill-card, .cert-card {
-    background: #0c0f14;
-    border: 1px solid #1b2330;
-    border-radius: 10px;
-    padding: 28px;
-}
+/* PROJECTS */
 .project-card {
-    width: 100%;
-    min-height: 0;
-    margin: 0 auto 34px auto;
-    padding: 0 0 28px 0;
-    overflow: hidden;
-    background: linear-gradient(180deg, #0c1118 0%, #090d13 100%);
-    border: 1px solid #1b2a3d;
-    border-radius: 14px;
-    transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+    overflow:hidden; height:100%; min-height:610px;
+    border:1px solid var(--line); border-radius:15px;
+    background:linear-gradient(180deg,#0d131c,#090d13);
+    transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;
+    margin-bottom:24px;
 }
 .project-card:hover {
-    transform: translateY(-4px);
-    border-color: #315eae;
-    box-shadow: 0 18px 50px rgba(0,0,0,.28);
+    transform:translateY(-5px); border-color:#2f5f9e;
+    box-shadow:0 25px 65px rgba(0,0,0,.25);
 }
-.project-card:hover, .experience-card:hover, .skill-card:hover, .cert-card:hover {
-    border-color: #315eae;
+.project-visual {
+    height:245px; padding:10px; position:relative; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle at 50% 20%,rgba(75,141,255,.13),transparent 55%),#080c12;
+    border-bottom:1px solid var(--line);
 }
-.project-title, .experience-title {
-    color: #fff;
-    font-weight: 700;
-}
-.project-title { font-size: 25px; }
-.project-index {
-    color: #FFD700;
-    font-weight: 800;
-    font-size: 15px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-bottom: 18px;
-}
-.project-tech { color: var(--blue); font-weight: 600; margin-top: 8px; }
-
-.project-repo {
-    margin-top: 22px;
-}
-.project-repo a {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none !important;
-    color: #dce8f7 !important;
-    border: 1px solid #26364d;
-    background: #111721;
-    border-radius: 7px;
-    padding: 9px 14px;
-    font-weight: 600;
-    transition: all .2s ease;
-}
-.project-repo a:hover {
-    color: #ffffff !important;
-    border-color: #3d86ff;
-    background: #151d29;
-}
- .project-image-wrap {
-    position: relative;
-    overflow: hidden;
-    width: 100%;
-    height: 560px;
-    margin: 0 0 28px 0;
-    border-radius: 14px 14px 0 0;
+.project-visual img { width:100%; height:100%; object-fit:contain; border-radius:9px; }
+.visual-placeholder {
+    width:92%; height:82%; border:1px solid #21334a; border-radius:12px;
     background:
-        radial-gradient(circle at 50% 20%, rgba(61,134,255,.10), transparent 45%),
-        #080c12;
-    border-bottom: 1px solid #1b2330;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 10px;
-    box-sizing: border-box;
+      linear-gradient(135deg,rgba(75,141,255,.13),transparent 55%),
+      #0b1119;
+    display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden;
 }
-.project-image-wrap img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: contain;
-    object-position: center;
-    border-radius: 8px;
-    transition: transform .35s ease, filter .35s ease;
+.visual-placeholder:before {
+    content:""; position:absolute; inset:20px;
+    border:1px dashed #29415f; border-radius:9px;
 }
-.project-image-wrap:hover img {
-    transform: scale(1.025);
-    filter: brightness(1.08);
+.visual-code {
+    color:#7fa9dc; font-family:monospace; font-size:12px; line-height:1.8;
+    z-index:1; text-align:left;
 }
-.project-image-overlay {
-    position: absolute;
-    left: 14px;
-    bottom: 12px;
-    padding: 6px 10px;
-    border: 1px solid rgba(255,255,255,.16);
-    border-radius: 6px;
-    background: rgba(7,10,15,.78);
-    color: #dce8f7;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    backdrop-filter: blur(8px);
+.category {
+    position:absolute; left:20px; bottom:17px;
+    background:rgba(6,10,16,.82); border:1px solid rgba(255,255,255,.13);
+    border-radius:6px; padding:6px 9px; color:#b6c8dc;
+    font-size:10px; letter-spacing:1.4px; font-weight:700;
+    backdrop-filter:blur(8px);
 }
-.project-card-body {
-    padding: 0 34px;
-}
-.project-card-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    margin-bottom: 10px;
-}
-.project-card-description {
-    color: #91a5bd;
-    font-size: 16px;
-    line-height: 1.8;
-    max-width: 1050px;
-    margin-top: 18px;
-}
-.project-metric-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    margin-top: 24px;
-}
-.project-metric {
-    min-height: 82px;
-    padding: 14px 16px;
-    border: 1px solid #1b2a3d;
-    border-radius: 9px;
-    background: #090e15;
-}
-.project-metric-value {
-    color: #3d86ff;
-    font-size: 22px;
-    font-weight: 800;
-}
-.project-metric-label {
-    color: #849ab4;
-    font-size: 13px;
-    margin-top: 5px;
-}
-.project-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 18px;
-}
-.project-tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 10px;
-    border: 1px solid #26364d;
-    border-radius: 7px;
-    background: #0e151f;
-    color: #a8bbd1;
-    font-size: 12px;
-}
-@media (max-width: 800px) {
-    .project-image-wrap { height: 460px; padding: 6px; }
-    .project-card-body { padding: 0 20px; }
-    .project-metric-grid { grid-template-columns: 1fr; }
-}
+.project-body { padding:25px 25px 27px; }
+.project-number { color:#4b8dff; font-size:11px; letter-spacing:2px; font-weight:800; }
+.project-title { color:#fff; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; margin-top:8px; }
+.project-subtitle { color:#7e93ad; font-size:13px; margin-top:4px; }
+.project-desc { color:#899bb0; font-size:14px; line-height:1.72; margin-top:16px; }
+.tags { display:flex; flex-wrap:wrap; gap:7px; margin-top:16px; }
+.tag { border:1px solid #203149; background:#0d1621; color:#9db2cb; border-radius:6px; padding:5px 8px; font-size:11px; }
+.metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-top:20px; }
+.metric { padding:10px 8px; border:1px solid #19283b; background:#0a1018; border-radius:7px; }
+.metric strong { display:block; color:#e9f0f8; font-size:14px; }
+.metric span { display:block; color:#667d98; font-size:9px; margin-top:3px; }
+.project-link { display:inline-flex; margin-top:20px; color:#a9c8f2; text-decoration:none; font-size:12px; font-weight:700; }
+.project-link:hover { color:#fff; }
+@media(max-width:700px) { .metrics { grid-template-columns:repeat(2,1fr); } .project-card { min-height:auto; } }
 
-.project-image-placeholder {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #607894;
-    font-size: 13px;
-    letter-spacing: 1px;
+/* EXPERIENCE */
+.timeline { border-left:1px solid #233249; margin-top:28px; padding-left:28px; }
+.timeline-item { position:relative; padding:0 0 38px; }
+.timeline-item:before {
+    content:""; position:absolute; width:9px; height:9px; border-radius:50%;
+    background:var(--blue); left:-33px; top:7px; box-shadow:0 0 0 5px #0a111a;
 }
-.project-description, .experience-text {
-    color: #91a6c0;
-    line-height: 1.75;
-    margin-top: 20px;
-}
-.tag {
-    display: inline-block;
-    background: #111721;
-    border: 1px solid #202d40;
-    border-radius: 5px;
-    color: #9bb2cf;
-    font-size: 12px;
-    padding: 7px 10px;
-    margin: 4px 3px 4px 0;
-}
-.experience-card { margin-bottom: 25px; }
-.experience-date { color: var(--blue); font-weight: 700; font-size: 17px; }
-.experience-location { color: #7f94ad; margin-top: 7px; }
-.experience-title { font-size: 25px; margin-top: 20px; }
-.experience-company { color: #91a6c0; font-size: 17px; margin-top: 5px; }
-.skill-title { color: #fff; font-size: 21px; font-weight: 700; margin-bottom: 18px; }
-.cert-card { min-height: 180px; }
-.cert-title { color: #fff; font-size: 18px; font-weight: 700; }
-.cert-provider { color: var(--blue); margin-top: 15px; }
+.timeline-date { color:#5f83b2; font-size:12px; letter-spacing:1.3px; font-weight:700; }
+.timeline-role { color:#fff; font-family:'Space Grotesk',sans-serif; font-size:25px; font-weight:700; margin-top:7px; }
+.timeline-company { color:#a0b0c3; font-size:15px; margin-top:3px; }
+.timeline-text { color:#8294aa; font-size:14px; line-height:1.8; margin-top:12px; }
+.timeline-tags { margin-top:13px; display:flex; flex-wrap:wrap; gap:7px; }
 
-.contact-text { color: #91a6c0; font-size: 17px; line-height: 1.8; }
-.contact-title {
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 5px;
-    color: #9bb6d5;
-    margin-top: 5px;
-    margin-bottom: 25px;
+/* SKILLS */
+.skill-card {
+    border:1px solid var(--line); border-radius:13px; padding:23px;
+    background:#0b1017; height:100%; margin-bottom:16px;
 }
-.contact-card {
-    background: #10141b;
-    border: 1px solid #202938;
-    border-radius: 12px;
-    padding: 30px;
+.skill-card h3 { color:#fff; font-family:'Space Grotesk',sans-serif; font-size:19px; margin:0 0 14px; }
+.skill-list { color:#8fa2b9; line-height:2; font-size:14px; }
+
+/* CONTACT */
+.contact-shell {
+    margin-top:30px; padding:30px; border:1px solid var(--line); border-radius:15px;
+    background:linear-gradient(145deg,#0d141e,#090d13);
+}
+.contact-title { color:#fff; font-family:'Space Grotesk',sans-serif; font-size:42px; line-height:1.1; letter-spacing:-1.5px; }
+.contact-copy { color:#899bb0; line-height:1.8; margin-top:15px; }
+.contact-links { margin-top:22px; }
+.contact-links a { color:#9fc1ec; text-decoration:none; margin-right:18px; font-size:13px; }
+.contact-links a:hover { color:#fff; }
+div[data-testid="stTextInput"] input, div[data-testid="stTextArea"] textarea {
+    background:#080c12 !important; color:#fff !important;
+    border:1px solid #203047 !important; border-radius:8px !important;
+}
+div[data-testid="stTextInput"] input:focus, div[data-testid="stTextArea"] textarea:focus {
+    border-color:#4b8dff !important; box-shadow:none !important;
+}
+div.stButton > button {
+    background:#4b8dff !important; color:#fff !important; border:0 !important;
+    border-radius:8px !important; font-weight:700 !important;
 }
 .footer {
-    margin-top: 100px;
-    padding: 35px;
-    border-top: 1px solid #151b24;
-    text-align: center;
-    color: #71839a;
-}
-
-div.stButton > button, .stLinkButton > a, div[data-testid="stDownloadButton"] > button {
-    border-radius: 7px !important;
-    font-weight: 600 !important;
-}
-
-div[data-testid="stDownloadButton"] > button { width: 100% !important; }
-
-.resume-preview {\n    scroll-margin-top: 80px;
-    background: #10141b;
-    border: 1px solid #202938;
-    border-radius: 10px;
-    padding: 14px;
-    margin: 18px 0 8px 0;
-}
-#projects { scroll-margin-top: 90px; }\n\n.project-view-button {
-    display: inline-block;
-    width: 100%;
-    box-sizing: border-box;
-    text-align: center;
-    text-decoration: none !important;
-    background: transparent;
-    color: #d8e4f3 !important;
-    border: 1px solid #2b3a50;
-    border-radius: 7px;
-    padding: 9px 12px;
-    font-weight: 600;
-}
-.project-view-button:hover {
-    color: #fff !important;
-    border-color: #3d86ff;
-    background: rgba(61,134,255,.08);
-}
-.primary-button div[data-testid="stDownloadButton"] > button {
-    background: var(--blue) !important; color: #fff !important;
-    border: 1px solid var(--blue) !important; font-weight: 700 !important;
-}
-.primary-button div[data-testid="stDownloadButton"] > button:hover {
-    background: #2f74e7 !important; border-color: #2f74e7 !important;
-}
-.nav-button div[data-testid="stDownloadButton"] > button {
-    min-height: 40px !important; height: 40px !important; border-radius: 8px !important;
-    padding: 0 15px !important; background: #10141b !important;
-    color: #d8e4f3 !important; border: 1px solid #1d2634 !important;
-}
-
-@media (max-width: 900px) {
-    .hero-space { height: 65px; }
-    .hero-title { font-size: 48px; }
-    .hero-subtitle { font-size: 28px; }
-    .section-title, .contact-title { font-size: 34px; }
-    .impact-card { margin-top: 35px; }
-}
-@media (max-width: 600px) {
-    .hero-title { font-size: 40px; letter-spacing: -1.5px; }
-    .hero-subtitle { font-size: 25px; }
-    .impact-title { font-size: 29px; }
+    margin-top:80px; padding:28px 0 10px; border-top:1px solid var(--line-soft);
+    color:#60728a; font-size:12px; text-align:center;
 }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
-# =========================================================
-# NAVIGATION
-# =========================================================
-
+# -------------------------------------------------------------------
+# Navigation
+# -------------------------------------------------------------------
 st.markdown(
-    '<div class="nav-shell"></div>',
-    unsafe_allow_html=True
+    f"""
+<div class="nav">
+  <div class="nav-brand">AK<span>.</span></div>
+  <div class="nav-links">
+    <a href="#work">Work</a>
+    <a href="#experience">Experience</a>
+    <a href="#skills">Skills</a>
+    <a href="#contact" class="nav-cta">Let's connect ↗</a>
+  </div>
+</div>
+""",
+    unsafe_allow_html=True,
 )
 
-nav1, nav2, nav3, nav4, nav5, nav6 = st.columns(
-    [2.3, 1, 1, 1, 1, 0.8],
-    gap="small"
-)
-
-with nav1:
-    st.markdown(
-        '<div class="nav-logo">AK<span>.</span></div>',
-        unsafe_allow_html=True
-    )
-
-with nav2:
-    st.markdown(
-        '<div class="nav-item"><a href="#projects">Projects</a></div>',
-        unsafe_allow_html=True
-    )
-
-with nav3:
-    st.markdown(
-        '<div class="nav-item"><a href="#experience">Experience</a></div>',
-        unsafe_allow_html=True
-    )
-
-with nav4:
-    st.markdown(
-        '<div class="nav-item"><a href="#skills">Skills</a></div>',
-        unsafe_allow_html=True
-    )
-
-with nav5:
-    st.markdown(
-        '<div class="nav-item"><a href="#certifications">Certifications</a></div>',
-        unsafe_allow_html=True
-    )
-
-with nav6:
-    st.markdown(
-        '<div class="nav-item"><a href="#contact">Contact</a></div>',
-        unsafe_allow_html=True
-    )
-
-
-# =========================================================
-# HERO
-# =========================================================
-
-st.markdown(
-    '<div class="hero-space"></div>',
-    unsafe_allow_html=True
-)
-
-hero_left, hero_right = st.columns(
-    [1.28, 0.72],
-    gap="large"
-)
-
-# =========================================================
-# LEFT SIDE
-# =========================================================
+# -------------------------------------------------------------------
+# Hero
+# -------------------------------------------------------------------
+st.markdown('<div class="hero">', unsafe_allow_html=True)
+hero_left, hero_right = st.columns([1.45, .75], gap="large")
 
 with hero_left:
-
-    st.markdown("""
-    <div class="eyebrow">
-        DATA ANALYST · MACHINE LEARNING · GENAI · MARKETING ANALYTICS
-    </div>
-    <div class="hero-title">Akshay Kumar</div>
-    <div class="hero-subtitle">Data that decides. Models that deliver.</div>
-    <div class="hero-text">
-        I turn raw data into decisions using regression models, computer vision,
-        and RAG-powered AI assistants that measurably lift ROI.
-    </div>
-    """, unsafe_allow_html=True)
-
-    # =====================================================
-    # HERO ACTION BUTTONS
-    # =====================================================
-
     st.markdown(
-        '<div class="hero-actions">',
-        unsafe_allow_html=True
+        """
+<div class="kicker"><span class="kicker-dot"></span> Data Analyst · Machine Learning · GenAI</div>
+<h1>Akshay <span>Kumar</span></h1>
+<h2>Turning data into decisions and models into useful products.</h2>
+<div class="hero-copy">
+I work across analytics, machine learning, Generative AI and automation.
+My projects span Marketing Mix Modeling, enterprise RAG, computer vision,
+model optimization and Power Platform solutions.
+</div>
+<div class="hero-actions">
+  <a class="btn-primary" href="#work">Explore my work ↓</a>
+  <a class="btn-secondary" href="https://github.com/kumarakshay7" target="_blank">GitHub ↗</a>
+  <a class="btn-secondary" href="https://www.linkedin.com/in/akshaykumar17/" target="_blank">LinkedIn ↗</a>
+</div>
+<div class="hero-note">Open to Data Analyst, Data Scientist and AI/ML opportunities.</div>
+""",
+        unsafe_allow_html=True,
     )
 
-    action1, action2, action3, action4, action5, action6 = st.columns(
-        [1.25, 1.25, 1.05, 0.32, 0.32, 0.32],
-        gap="small"
+with hero_right:
+    st.markdown(
+        """
+<div class="stat-panel">
+  <div class="stat-head">
+    <div class="stat-label">SELECTED IMPACT</div>
+    <div class="stat-live">● ACTIVE</div>
+  </div>
+  <div class="stat-title">Built around measurable outcomes.</div>
+
+  <div class="big-stat">
+    <div><div class="big-number">500K+</div><div class="stat-foot">records handled in analytics workflows</div></div>
+    <div class="big-label">DATA SCALE</div>
+  </div>
+  <div class="big-stat">
+    <div><div class="big-number">+25%</div><div class="stat-foot">budget efficiency in MMM work</div></div>
+    <div class="big-label">MMM</div>
+  </div>
+  <div class="big-stat">
+    <div><div class="big-number">+35%</div><div class="stat-foot">workflow efficiency through Power Apps solutions</div></div>
+    <div class="big-label">AUTOMATION</div>
+  </div>
+  <div class="stat-foot">Python · SQL · Azure · Power Platform · ML · GenAI</div>
+</div>
+""",
+        unsafe_allow_html=True,
     )
 
-    with action1:
-        if st.button(
-            "⇩  View Resume",
-            disabled=not RESUME_EXISTS,
-            use_container_width=True,
-            key="hero_resume_preview",
-        ):
-            st.session_state.show_resume_preview = True
+st.markdown("</div>", unsafe_allow_html=True)
 
-    with action2:
+# -------------------------------------------------------------------
+# Resume actions
+# -------------------------------------------------------------------
+if RESUME_EXISTS:
+    c1, c2, c3 = st.columns([1, 1, 3])
+    with c1:
         st.download_button(
-            "↓  Download Resume",
+            "↓ Download Resume",
             data=RESUME_DATA,
             file_name="Akshay_Kumar_Resume.pdf",
             mime="application/pdf",
-            disabled=not RESUME_EXISTS,
             use_container_width=True,
-            key="hero_resume_download",
         )
+    with c2:
+        if st.button("View Resume", use_container_width=True):
+            st.session_state["show_resume"] = not st.session_state.get("show_resume", False)
 
-    with action3:
-        st.markdown(
-            """
-            <a class="project-view-button" href="#projects">
-                ↓&nbsp; View Projects
-            </a>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with action4:
-        st.link_button(
-            "in",
-            "https://www.linkedin.com/in/akshaykumar17/",
-            use_container_width=True
-        )
-
-    with action5:
-        st.link_button(
-            "⌘",
-            "https://github.com/kumarakshay7",
-            use_container_width=True
-        )
-
-    with action6:
-        st.link_button(
-            "✉",
-            "mailto:akshaykumar7280@gmail.com",
-            use_container_width=True
-        )
-
-    st.markdown(
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="location">⌾ &nbsp;Current Location: New Delhi, India</div>',
-        unsafe_allow_html=True
-    )
-
-
-# =========================================================
-# RIGHT SIDE: IMPACT CARD
-# =========================================================
-
-with hero_right:
-
-    st.html("""
-    <div class="impact-card">
-
-        <div class="impact-top">
-            <div class="impact-label">IMPACT INDEX</div>
-            <div class="impact-growth">+62% YoY</div>
-        </div>
-
-        <div class="impact-title">Measured outcomes</div>
-
-        <div class="impact-chart">
-            <div class="impact-chart-grid"></div>
-            <div class="impact-chart-area"></div>
-            <div class="impact-chart-line">
-                <span class="chart-seg-1"></span>
-                <span class="chart-seg-2"></span>
-                <span class="chart-seg-3"></span>
-                <span class="chart-seg-4"></span>
-                <span class="chart-seg-5"></span>
-                <span class="chart-seg-6"></span>
-                <span class="chart-seg-7"></span>
-                <span class="chart-seg-8"></span>
-                <span class="chart-seg-9"></span>
-                <span class="chart-seg-10"></span>
-                <span class="chart-seg-11"></span>
-                <span class="chart-seg-12"></span>
-            </div>
-        </div>
-
-        <div class="impact-metrics">
-            <div class="metric-box">
-                <div class="metric-number">500K+</div>
-                <div class="metric-label">Records processed</div>
-            </div>
-            <div class="metric-box">
-                <div class="metric-number">25%</div>
-                <div class="metric-label">Marketing ROI uplift</div>
-            </div>
-            <div class="metric-box">
-                <div class="metric-number">R² 0.85</div>
-                <div class="metric-label">MMM model accuracy</div>
-            </div>
-            <div class="metric-box">
-                <div class="metric-number">20+</div>
-                <div class="metric-label">Research datasets analyzed</div>
-            </div>
-        </div>
-
-    </div>
-    """)
-
-
-# =========================================================
-# RESUME PREVIEW
-# =========================================================
-
-if st.session_state.show_resume_preview and RESUME_EXISTS:
-
-    st.markdown(
-        '<div class="resume-preview">',
-        unsafe_allow_html=True
-    )
-
-    st.subheader("Resume Preview")
-
+if st.session_state.get("show_resume") and RESUME_EXISTS:
+    st.markdown('<div class="contact-shell">', unsafe_allow_html=True)
+    st.subheader("Resume preview")
     try:
-
         import pymupdf
-
-        pdf_document = pymupdf.open(
-            stream=RESUME_DATA,
-            filetype="pdf"
-        )
-
-        if pdf_document.page_count == 0:
-
-            st.error("The resume PDF contains no pages.")
-
-        else:
-
-            for page_number in range(pdf_document.page_count):
-
-                page = pdf_document.load_page(page_number)
-
-                pix = page.get_pixmap(
-                    matrix=pymupdf.Matrix(1.5, 1.5),
-                    alpha=False
-                )
-
-                st.image(
-                    pix.tobytes("png"),
-                    caption=(
-                        f"Resume • Page {page_number + 1} "
-                        f"of {pdf_document.page_count}"
-                    ),
-                    use_container_width=True,
-                )
-
-        pdf_document.close()
-
-    except ImportError:
-
-        st.error(
-            "Resume preview requires PyMuPDF. "
-            "Install it with: pip install pymupdf"
-        )
-
+        doc = pymupdf.open(stream=RESUME_DATA, filetype="pdf")
+        for i in range(doc.page_count):
+            pix = doc.load_page(i).get_pixmap(matrix=pymupdf.Matrix(1.25, 1.25), alpha=False)
+            st.image(pix.tobytes("png"), caption=f"Page {i + 1}", use_container_width=True)
+        doc.close()
     except Exception as exc:
-
-        st.error(
-            f"Could not preview the resume PDF: {exc}"
-        )
-
-    st.download_button(
-        label="↓  Download Resume PDF",
-        data=RESUME_DATA,
-        file_name="Akshay_Kumar_Resume.pdf",
-        mime="application/pdf",
-        use_container_width=True,
-        key="resume_pdf_download",
-    )
-
-    if st.button(
-        "✕  Close Resume Preview",
-        use_container_width=True,
-        key="close_resume_preview"
-    ):
-
-        st.session_state.show_resume_preview = False
-        st.rerun()
-
-    st.markdown(
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-# =========================================================
-# PROJECTS
-# =========================================================
-
-st.markdown(
-    '<div id="projects"></div>',
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    """
-    <div class="section">
-
-    <div class="section-label">
-    SELECTED WORK
-    </div>
-
-    <div class="section-title">
-    Projects with measurable impact
-    </div>
-
-    <div class="section-description">
-    Selected analytics, machine learning and Generative AI
-    projects demonstrating practical problem solving and
-    technical implementation.
-    </div>
-
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-
-project1, project2 = st.columns(2, gap="large")
-
-
-# =========================================================
-# PROJECT CARDS
-# Three-column layout matching the reference design
-# =========================================================
-
-projects = [
-    {
-        "key": "mmm",
-        "number": "PROJECT 01",
-        "category": "MARKETING ANALYTICS",
-        "title": "Marketing Mix Modeling",
-        "tech": "Python · OLS Regression · Marketing Analytics",
-        "description": (
-            "Developed an end-to-end Marketing Mix Modeling solution using "
-            "OLS regression across 500K+ ad-spend records and 5 marketing "
-            "channels. Applied feature engineering, VIF checks, residual "
-            "diagnostics and channel contribution analysis to support "
-            "marketing budget allocation and ROI optimization."
-        ),
-        "tags": ["Python", "OLS Regression", "Pandas", "Feature Engineering", "VIF"],
-        "metrics": [
-            ("0.85", "Model R²"),
-            ("+25%", "Budget Efficiency"),
-            ("+12%", "Campaign ROI"),
-        ],
-    },
-    {
-        "key": "vehicle",
-        "number": "PROJECT 02",
-        "category": "COMPUTER VISION",
-        "title": "Vehicle Detection & Tracking",
-        "tech": "Python · YOLOv8 · OpenCV · Deep Learning",
-        "description": (
-            "Built a computer vision system using YOLOv8 to detect and "
-            "classify vehicles from images and video frames. Applied "
-            "preprocessing, augmentation and model fine-tuning to improve "
-            "detection performance across multiple vehicle classes."
-        ),
-        "tags": ["Python", "YOLOv8", "OpenCV", "Deep Learning"],
-        "metrics": [
-            ("10K+", "Images"),
-            ("92.4%", "Model mAP"),
-            ("30+", "FPS Inference"),
-        ],
-    },
-    {
-        "key": "rag",
-        "number": "PROJECT 03",
-        "category": "GENERATIVE AI · RAG",
-        "title": "Enterprise RAG AI Assistant",
-        "tech": "LangChain · Azure OpenAI · Azure AI Search · GPT-4o · Streamlit",
-        "description": (
-            "Developed an end-to-end RAG application for enterprise "
-            "document question answering. Implemented document ingestion, "
-            "chunking, embeddings, semantic/vector retrieval and grounded "
-            "responses using Azure OpenAI and Azure AI Search."
-        ),
-        "tags": ["LangChain", "Azure OpenAI", "Azure AI Search", "GPT-4o", "Streamlit"],
-        "metrics": [
-            ("92%", "Grounded Accuracy"),
-            ("5K+", "Documents Indexed"),
-            ("2.3s", "Avg Response Time"),
-        ],
-    },
-]
-
-for project in projects:
-    image_uri = PROJECT_IMAGES.get(project["key"], "")
-
-    if image_uri:
-        image_html = (
-            '<img src="' + image_uri + '" alt="' +
-            project["title"] + ' project visualization">'
-        )
-    else:
-        image_html = (
-            '<div class="project-image-placeholder">Image unavailable: ' +
-            project["key"] + '.png</div>'
-        )
-
-    tags_html = "".join(
-        '<span class="project-tag">' + tag + '</span>'
-        for tag in project["tags"]
-    )
-
-    metrics_html = "".join(
-        '<div class="project-metric">'
-        '<div class="project-metric-value">' + value + '</div>'
-        '<div class="project-metric-label">' + label + '</div>'
-        '</div>'
-        for value, label in project["metrics"]
-    )
-
-    card_html = f"""
-    <div class="project-card">
-        <div class="project-image-wrap">
-            {image_html}
-            <div class="project-image-overlay">{project["category"]}</div>
-        </div>
-
-        <div class="project-card-body">
-            <div class="project-card-top">
-                <div class="project-index">{project["number"]}</div>
-            </div>
-
-            <div class="project-title">{project["title"]}</div>
-
-            <div class="project-tech">
-                {project["tech"]}
-            </div>
-
-            <div class="project-card-description">
-                {project["description"]}
-            </div>
-
-            <div class="project-tags">
-                {tags_html}
-            </div>
-
-            <div class="project-metric-grid">
-                {metrics_html}
-            </div>
-
-            <div class="project-repo">
-                <a href="{PROJECT_REPOS[project["key"]]}"
-                   target="_blank"
-                   rel="noopener noreferrer">
-                    <span style="font-size:18px;">●</span>
-                    &nbsp; View on GitHub
-                    <span style="margin-left:8px;">↗</span>
-                </a>
-            </div>
-        </div>
-    </div>
-    """
-
-    st.html(card_html)
-
-
-
-# =========================================================
-# EXPERIENCE
-# =========================================================
-
-st.markdown(
-    '<div id="experience"></div>',
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    """
-    <div class="section">
-
-    <div class="section-label">
-    CAREER
-    </div>
-
-    <div class="section-title">
-    Experience & Education
-    </div>
-
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-
-# Protics
-
-st.markdown(
-    """
-    <div class="experience-card">
-
-    <div class="experience-date">
-    September 2025 – Present
-    </div>
-
-    <div class="experience-location">
-    📍 Sarita Vihar, New Delhi
-    </div>
-
-    <div class="experience-title">
-    Data Analyst
-    </div>
-
-    <div class="experience-company">
-    Protics Research
-    </div>
-
-    <div class="experience-text">
-
-    ▸ Analyzed market research datasets using SQL and
-        Python, improving insight accuracy by 20%.
-
-    <br>
-
-    ▸ Designed and executed quantitative research analysis on 20+ datasets, automating data cleaning and statistical
-        evaluation to deliver high-quality insights across 5 industry domains.
-
-    <br>
-
-    ▸  Prepared data processing and reporting workflows using Python, reducing manual effort by 40% and increasing efficiency.
-
-    <br>
-
-    ▸ Applied advanced statistical techniques (correlation, regression, hypothesis testing) across 15+ client studies, identifying
-        key drivers that boosted client retention strategies by 12%.
-
-    <br>
-
-    <span class="tag">SQL</span>
-    <span class="tag">Python</span>
-    <span class="tag">Statistics</span>
-    <span class="tag">20+ Datasets</span>
-
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-
-# Course 5
-
-st.markdown(
-    """
-    <div class="experience-card">
-
-    <div class="experience-date">
-    August 2024 – September 2025
-    </div>
-
-    <div class="experience-location">
-    📍 Coimbatore, Tamil Nadu
-    </div>
-
-    <div class="experience-title">
-    Analyst
-    </div>
-
-    <div class="experience-company">
-    Course 5 Intelligence Ltd
-    </div>
-
-    <div class="experience-text">
-
-    ▸ Engineered and processed large datasets (500K+ records) in Excel and trained OLS regression models in Python for
-       predictive analytics,improving model accuracy by 18% through advanced feature engineering and validation techniques
-
-    <br>
-
-    ▸ Organised and implemented a real-time Marketing Mix Attribution model for 2 CPG clients/brands, achieving a 25%
-        uplift in marketing ROI measurement; presented actionable insights to stakeholders to drive strategic decision-making.
-
-    <br>
-
-    ▸ Designed and delivered Power Apps solutions that Analyzed workflow efficiency by 35% and supported faster
-        decision-making, contributing to an 8% rise in operational revenue.
-    <br>
-
-    ▸ Delivered Power Apps solutions that improved workflow efficiency by 35%.
-
-    </div>
-
-    <br>
-
-    <span class="tag">500K+ Records</span>
-    <span class="tag">OLS Regression</span>
-    <span class="tag">Marketing Analytics</span>
-    <span class="tag">Power Apps</span>
-
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-
-# Education
-
-st.markdown(
-    """
-    <div class="experience-card">
-
-    <div class="experience-date">
-    2022 – 2024
-    </div>
-
-    <div class="experience-location">
-    📍 Jalandhar, Punjab
-    </div>
-
-    <div class="experience-title">
-    MBA, Business Analytics
-    </div>
-
-    <div class="experience-company">
-    Lovely Professional University
-    </div>
-
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-
-# =========================================================
-# SKILLS
-# =========================================================
-
-st.markdown(
-    '<div id="skills"></div>',
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    """
-    <div class="section">
-
-    <div class="section-label">
-    TOOLBOX
-    </div>
-
-    <div class="section-title">
-    Skills Matrix
-    </div>
-
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-
-skill1, skill2 = st.columns(2, gap="large")
-
-
-with skill1:
-
-    st.markdown(
-        """
-        <div class="skill-card">
-
-        <div class="skill-title">
-        ML & AI
-        </div>
-
-        <span class="tag">Regression</span>
-        <span class="tag">Classification</span>
-        <span class="tag">Time-Series Forecasting</span>
-        <span class="tag">Marketing Mix Modeling</span>
-        <span class="tag">Deep Learning</span>
-        <span class="tag">NLP</span>
-        <span class="tag">Computer Vision</span>
-        <span class="tag">LLMs & RAG</span>
-        <span class="tag">Generative AI</span>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        """
-        <div class="skill-card">
-
-        <div class="skill-title">
-        Engineering
-        </div>
-
-        <span class="tag">Python</span>
-        <span class="tag">Pandas</span>
-        <span class="tag">NumPy</span>
-        <span class="tag">SciPy</span>
-        <span class="tag">PyTorch</span>
-        <span class="tag">TensorFlow</span>
-        <span class="tag">SQL</span>
-        <span class="tag">REST APIs</span>
-        <span class="tag">LangChain</span>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-with skill2:
-
-    st.markdown(
-        """
-        <div class="skill-card">
-
-        <div class="skill-title">
-        Analytics & Statistics
-        </div>
-
-        <span class="tag">EDA</span>
-        <span class="tag">Hypothesis Testing</span>
-        <span class="tag">A/B Testing</span>
-        <span class="tag">Feature Engineering</span>
-        <span class="tag">Correlation</span>
-        <span class="tag">Regression</span>
-        <span class="tag">Predictive Analytics</span>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        """
-        <div class="skill-card">
-
-        <div class="skill-title">
-        BI, Cloud & Tools
-        </div>
-
-        <span class="tag">Power BI</span>
-        <span class="tag">Tableau</span>
-        <span class="tag">Advanced Excel</span>
-        <span class="tag">Azure OpenAI</span>
-        <span class="tag">Azure AI Search</span>
-        <span class="tag">Power Apps</span>
-        <span class="tag">Power Automate</span>
-        <span class="tag">SharePoint</span>
-        <span class="tag">Copilot Studio</span>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-# =========================================================
-# CERTIFICATIONS
-# =========================================================
-
-st.markdown(
-    '<div id="certifications"></div>',
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    """
-    <div class="section">
-
-    <div class="section-label">
-    CREDENTIALS
-    </div>
-
-    <div class="section-title">
-    Certifications
-    </div>
-
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-
-c1, c2, c3 = st.columns(3, gap="large")
-
-
-with c1:
-
-    st.markdown(
-        """
-        <div class="cert-card">
-
-        <div style="font-size:30px;">
-        🏆
-        </div>
-
-        <br>
-
-        <div class="cert-title">
-        PL-900: Microsoft Power Platform Fundamentals
-        </div>
-
-        <div class="cert-provider">
-        ✓ Microsoft
-        </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-with c2:
-
-    st.markdown(
-        """
-        <div class="cert-card">
-
-        <div style="font-size:30px;">
-        🤖
-        </div>
-
-        <br>
-
-        <div class="cert-title">
-        Complete Generative AI Course
-        </div>
-
-        <div class="cert-provider">
-        ✓ Udemy
-        </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-with c3:
-
-    st.markdown(
-        """
-        <div class="cert-card">
-
-        <div style="font-size:30px;">
-        📊
-        </div>
-
-        <br>
-
-        <div class="cert-title">
-        Analytical Excel Certification Program
-        </div>
-
-        <div class="cert-provider">
-        ✓ Grant Thornton
-        </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-# ============================================================
-# CONTACT SECTION
-# ============================================================
-
-st.markdown("""
-<style>
-
-/* CONTACT SECTION */
-.contact-title {
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 5px;
-    color: #9bb6d5;
-    margin-bottom: 25px;
-}
-
-.contact-main-title {
-    font-size: 48px;
-    line-height: 1.08;
-    font-weight: 800;
-    color: #ffffff;
-    margin-bottom: 25px;
-}
-
-.contact-text {
-    font-size: 19px;
-    line-height: 1.7;
-    color: #9bb6d5;
-    margin-bottom: 22px;
-}
-
-.contact-text strong {
-    color: #ffffff;
-}
-
-.contact-tag {
-    display: inline-block;
-    background: #0d1522;
-    border: 1px solid #18365e;
-    color: #3d86ff;
-    border-radius: 8px;
-    padding: 9px 14px;
-    margin: 5px 5px 5px 0;
-    font-size: 14px;
-    font-weight: 700;
-}
-
-.connect-title {
-    color: #ffffff;
-    font-size: 22px;
-    font-weight: 750;
-    margin-top: 8px;
-    margin-bottom: 10px;
-}
-
-.connect-text {
-    color: #9bb6d5;
-    font-size: 18px;
-    line-height: 1.55;
-    margin-bottom: 3px !important;
-}
-
-.contact-info {
-    color: #ffffff;
-    font-size: 16px;
-    font-weight: 600;
-    margin: 3px 0 !important;
-}
-
-.contact-form-box {
-    background: #0d1016;
-    border: 1px solid #1b2635;
-    border-radius: 10px;
-    padding: 25px;
-}
-
-/* Streamlit form inputs */
-div[data-testid="stTextInput"] input,
-div[data-testid="stTextArea"] textarea {
-    background: #090b0f !important;
-    color: #ffffff !important;
-    border: 1px solid #1d2a3b !important;
-    border-radius: 8px !important;
-    padding: 15px !important;
-    font-size: 16px !important;
-}
-
-div[data-testid="stTextInput"] input:focus,
-div[data-testid="stTextArea"] textarea:focus {
-    border-color: #3d86ff !important;
-    box-shadow: none !important;
-}
-
-div[data-testid="stTextInput"] input::placeholder,
-div[data-testid="stTextArea"] textarea::placeholder {
-    color: #566b84 !important;
-}
-
-/* Hide Streamlit labels */
-.contact-form-box label {
-    color: #9bb6d5 !important;
-}
-
-/* Send button */
-div.stButton > button {
-    background: #3d86ff !important;
-    color: #ffffff !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 14px 28px !important;
-    font-size: 17px !important;
-    font-weight: 700 !important;
-}
-
-div.stButton > button:hover {
-    background: #3478e5 !important;
-    color: #ffffff !important;
-}
-
-/* Mobile */
-@media (max-width: 900px) {
-
-    .contact-main-title {
-        font-size: 40px;
-    }
-
-    .contact-text {
-        font-size: 17px;
-    }
-
-    .contact-form-box {
-        padding: 25px;
-        margin-top: 30px;
-    }
-
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-
-# ------------------------------------------------------------
-# SECTION LABEL
-# ------------------------------------------------------------
-
-st.markdown(
-    '<div class="contact-title">GET IN TOUCH</div>',
-    unsafe_allow_html=True
-)
-
-
-# ------------------------------------------------------------
-# TWO COLUMNS
-# ------------------------------------------------------------
-
-contact_left, contact_right = st.columns(
-    [0.9, 1.1],
-    gap="large"
-)
-
-
-# ============================================================
-# LEFT SIDE
-# ============================================================
-
-with contact_left:
-
-    st.markdown(
-        """
-        <div class="contact-main-title">
-            Looking for my next<br>
-            opportunity
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        """
-        <div class="contact-text">
-            I'm currently open to
-            <strong>Data Analyst,</strong>
-            <strong>Data Scientist, and AI/ML opportunities</strong>
-            where I can use data, analytics, and AI to solve
-            real-world business problems.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        """
-        <div class="contact-text">
-            If you're a recruiter,or someone
-            working on an interesting analytics project, I'd be
-            happy to connect and discuss potential opportunities.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        """
-        <span class="contact-tag">Analytics Roles</span>
-        <span class="contact-tag">AI/ML Roles</span>
-        <span class="contact-tag">Data Science Roles</span>
-        """,
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        '<div class="connect-title">Let\'s Connect</div>',
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        """
-        <div class="connect-text">
-            Have an opportunity that matches my profile?
-            Feel free to reach out. I'd be happy to discuss
-            how I can contribute to your team.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-st.html("""
-<div style="margin-top:5px;">
-
-    <!-- Email -->
-    <div class="contact-info" style="margin:5px 0;">
-        ✉ &nbsp;&nbsp; akshaykumar7280@gmail.com
-    </div>
-
-    <!-- Phone + Social Links -->
-    <div style="
-        display:flex;
-        align-items:center;
-        gap:8px;
-        margin-top:5px;
-        flex-wrap:wrap;
-    ">
-
-        <!-- Phone -->
-        <div class="contact-info" style="margin:0;">
-            ☎ &nbsp;&nbsp; +91 77620 40867
-        </div>
-
-        <!-- LinkedIn -->
-        <a href="https://www.linkedin.com/in/akshaykumar17/"
-           target="_blank"
-           style="
-           display:inline-flex;
-           align-items:center;
-           justify-content:center;
-           width:42px;
-           height:42px;
-           border:1px solid #1d2a3b;
-           border-radius:9px;
-           color:#ffffff;
-           background:#090c11;
-           text-decoration:none;
-           font-weight:700;">
-           in
-        </a>
-
-        <!-- GitHub -->
-        <a href="https://github.com/"
-           target="_blank"
-           style="
-           display:inline-flex;
-           align-items:center;
-           justify-content:center;
-           width:42px;
-           height:42px;
-           border:1px solid #1d2a3b;
-           border-radius:9px;
-           color:#ffffff;
-           background:#090c11;
-           text-decoration:none;
-           font-weight:700;">
-           Git
-        </a>
-
-    </div>
-
-</div>
-""")
-
-# ============================================================
-# RIGHT SIDE
-# ============================================================
-
-with contact_right:
-
-    # Show success message above the form
-    if st.session_state.get("message_sent", False):
-
-        st.success(
-            "✅ Message sent successfully! I'll get back to you soon."
-        )
-
-        st.session_state.message_sent = False
-
-
-    # Real Streamlit container
-    with st.container(border=True):
-
-        st.markdown(
-            '<div class="contact-title" style="letter-spacing:0px;">NAME</div>',
-            unsafe_allow_html=True
-        )
-
-        name = st.text_input(
-            "Your name",
-            placeholder="Your name",
-            label_visibility="collapsed",
-            key="portfolio_name"
-        )
-
-
-        st.markdown(
-            '<div class="contact-title" style="letter-spacing:4px; margin-top:10px;">EMAIL</div>',
-            unsafe_allow_html=True
-        )
-
-        email = st.text_input(
-            "Your email",
-            placeholder="you@company.com",
-            label_visibility="collapsed",
-            key="portfolio_email"
-        )
-
-
-        st.markdown(
-            '<div class="contact-title" style="letter-spacing:4px; margin-top:20px;">MESSAGE</div>',
-            unsafe_allow_html=True
-        )
-
-        message = st.text_area(
-            "Your message",
-            placeholder="Tell me about the role or project...",
-            height=160,
-            label_visibility="collapsed",
-            key="portfolio_message"
-        )
-
-
-        send_message = st.button(
-            "➤  Send Message",
-            key="portfolio_send"
-        )
-
-
-# ============================================================
-# ============================================================
-# SEND EMAIL
-# ============================================================
-
-if send_message:
-
-    if not name or not email or not message:
-
-        st.warning(
-            "Please fill in your name, email and message."
-        )
-
-    else:
-
-        import smtplib
-        from email.message import EmailMessage
-
-        try:
-
-            sender_email = st.secrets["EMAIL_ADDRESS"]
-            sender_password = st.secrets["EMAIL_APP_PASSWORD"]
-
-            receiver_email = "akshaykumar7280@gmail.com"
-
-            msg = EmailMessage()
-
-            msg["Subject"] = f"Portfolio Contact - {name}"
-            msg["From"] = sender_email
-            msg["To"] = receiver_email
-            msg["Reply-To"] = email
-
-            msg.set_content(
+        st.error(f"Could not preview the resume: {exc}")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# -------------------------------------------------------------------
+# Projects
+# -------------------------------------------------------------------
+st.markdown('<div id="work" class="section">', unsafe_allow_html=True)
+st.markdown('<div class="section-kicker">SELECTED WORK</div><div class="section-title">Projects that show how I work.</div><div class="section-copy">A mix of professional case studies and public engineering projects, covering analytics, machine learning, Generative AI and automation.</div>', unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
+
+for row_start in range(0, len(PROJECTS), 2):
+    cols = st.columns(2, gap="large")
+    for idx, project in enumerate(PROJECTS[row_start:row_start + 2]):
+        with cols[idx]:
+            image_uri = PROJECT_IMAGES.get(project["image"], "") if project["image"] else ""
+            if image_uri:
+                visual = f'<img src="{image_uri}" alt="{project["title"]} project visualization">'
+            else:
+                code_lines = {
+                    "04": "model → export → quantize\nFP32 → ONNX → INT8\nevaluate → analyze → verify",
+                    "05": "Power Apps\n   ↓\nPower Automate → SharePoint\n   ↓\nBI / Copilot Studio",
+                }.get(project["number"], "analytics → model → insight")
+                visual = f'<div class="visual-placeholder"><div class="visual-code">{code_lines.replace(chr(10), "<br>")}</div></div>'
+
+            tags = "".join(f'<span class="tag">{tag}</span>' for tag in project["stack"])
+            metrics = "".join(
+                f'<div class="metric"><strong>{value}</strong><span>{label}</span></div>'
+                for value, label in project["metrics"]
+            )
+            link_html = (
+                f'<a class="project-link" href="{project["link"]}" target="_blank">↗ {project["link_label"]}</a>'
+                if project["link"]
+                else f'<div class="project-link" style="color:#667d98;">◆ {project["link_label"]}</div>'
+            )
+
+            st.markdown(
                 f"""
-New message from your Portfolio Website
-
-Name:
-{name}
-
-Email:
-{email}
-
-Message:
-{message}
-"""
+<div class="project-card">
+  <div class="project-visual">{visual}<div class="category">{project["category"]}</div></div>
+  <div class="project-body">
+    <div class="project-number">PROJECT {project["number"]}</div>
+    <div class="project-title">{project["title"]}</div>
+    <div class="project-subtitle">{project["subtitle"]}</div>
+    <div class="project-desc">{project["description"]}</div>
+    <div class="tags">{tags}</div>
+    <div class="metrics">{metrics}</div>
+    {link_html}
+  </div>
+</div>
+""",
+                unsafe_allow_html=True,
             )
 
-            with smtplib.SMTP_SSL(
-                "smtp.gmail.com",
-                465
-            ) as smtp:
+# -------------------------------------------------------------------
+# Experience
+# -------------------------------------------------------------------
+st.markdown('<div id="experience" class="section">', unsafe_allow_html=True)
+st.markdown('<div class="section-kicker">CAREER</div><div class="section-title">Experience & education.</div><div class="section-copy">A concise view of recent analytics experience and the business problems behind the work.</div>', unsafe_allow_html=True)
+st.markdown(
+    """
+<div class="timeline">
+  <div class="timeline-item">
+    <div class="timeline-date">SEPTEMBER 2025 — PRESENT</div>
+    <div class="timeline-role">Data Analyst</div>
+    <div class="timeline-company">Protics Research</div>
+    <div class="timeline-text">
+      Worked with market research datasets using SQL and Python; designed quantitative analysis,
+      data-cleaning and reporting workflows across multiple studies and industry domains.
+      Applied correlation, regression and hypothesis testing to identify useful business drivers.
+    </div>
+    <div class="timeline-tags"><span class="tag">SQL</span><span class="tag">Python</span><span class="tag">Statistics</span><span class="tag">Market Research</span></div>
+  </div>
 
-                smtp.login(
-                    sender_email,
-                    sender_password
-                )
+  <div class="timeline-item">
+    <div class="timeline-date">AUGUST 2024 — SEPTEMBER 2025</div>
+    <div class="timeline-role">Analyst</div>
+    <div class="timeline-company">Course 5 Intelligence Ltd</div>
+    <div class="timeline-text">
+      Built analytics and automation solutions across Marketing Mix Modeling, predictive analytics,
+      computer vision and Power Platform. Processed 500K+ records, built OLS models, supported MMM
+      for 2 CPG clients/brands and delivered Power Apps solutions that improved workflow efficiency by 35%.
+    </div>
+    <div class="timeline-tags"><span class="tag">MMM</span><span class="tag">OLS</span><span class="tag">Power Apps</span><span class="tag">Computer Vision</span></div>
+  </div>
 
-                smtp.send_message(msg)
+  <div class="timeline-item">
+    <div class="timeline-date">2022 — 2024</div>
+    <div class="timeline-role">MBA, Business Analytics</div>
+    <div class="timeline-company">Lovely Professional University</div>
+    <div class="timeline-text">Academic focus on business analytics, data-driven decision making and applied analytical methods.</div>
+    <div class="timeline-tags"><span class="tag">Business Analytics</span><span class="tag">MBA</span></div>
+  </div>
+</div>
+""",
+    unsafe_allow_html=True,
+)
+st.markdown("</div>", unsafe_allow_html=True)
 
-            # Tell the page to show success message
-            st.session_state.message_sent = True
+# -------------------------------------------------------------------
+# Skills
+# -------------------------------------------------------------------
+st.markdown('<div id="skills" class="section">', unsafe_allow_html=True)
+st.markdown('<div class="section-kicker">TOOLBOX</div><div class="section-title">Technical skills.</div><div class="section-copy">Tools and methods used across analytics, machine learning, Generative AI and business automation.</div>', unsafe_allow_html=True)
 
-            # Rerun so success appears at the top of the form
-            st.rerun()
+skill_data = [
+    ("Analytics & Statistics", "SQL · Python · Pandas · NumPy · SciPy · EDA · Regression · Hypothesis Testing · Feature Engineering · Predictive Analytics"),
+    ("Machine Learning", "Marketing Mix Modeling · Time Series Forecasting · Classification · Deep Learning · Computer Vision · YOLOv8 · YOLO11 · OpenCV"),
+    ("Generative AI", "RAG · LLMs · LangChain · Embeddings · Azure OpenAI · Azure AI Search · Prompt Engineering · Streamlit"),
+    ("BI & Automation", "Power BI · Tableau · Advanced Excel · Power Apps · Power Automate · SharePoint · Copilot Studio"),
+    ("Engineering", "REST APIs · Java · Spring Boot · MySQL · Git/GitHub · ONNX · PyTorch · TensorFlow"),
+    ("Cloud", "Azure · Azure OpenAI · Azure AI Search"),
+]
+for start in range(0, len(skill_data), 2):
+    cols = st.columns(2, gap="large")
+    for j, (title, body) in enumerate(skill_data[start:start+2]):
+        with cols[j]:
+            st.markdown(f'<div class="skill-card"><h3>{title}</h3><div class="skill-list">{body}</div></div>', unsafe_allow_html=True)
 
-        except Exception as e:
+st.markdown("</div>", unsafe_allow_html=True)
 
-            st.error(
-                f"❌ Could not send the message: {e}"
-            )
+# -------------------------------------------------------------------
+# Certifications
+# -------------------------------------------------------------------
+st.markdown('<div class="section">', unsafe_allow_html=True)
+st.markdown('<div class="section-kicker">CREDENTIALS</div><div class="section-title">Certifications.</div>', unsafe_allow_html=True)
+certs = [
+    ("PL-900", "Microsoft Power Platform Fundamentals", "Microsoft"),
+    ("GENAI", "Complete Generative AI Course", "Udemy"),
+    ("EXCEL", "Analytical Excel Certification Program", "Grant Thornton"),
+]
+cols = st.columns(3, gap="large")
+for col, (code, title, provider) in zip(cols, certs):
+    with col:
+        st.markdown(f'<div class="skill-card"><div class="section-kicker">{code}</div><h3>{title}</h3><div class="skill-list">{provider}</div></div>', unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
+
+# -------------------------------------------------------------------
+# Contact
+# -------------------------------------------------------------------
+st.markdown('<div id="contact" class="section">', unsafe_allow_html=True)
+st.markdown('<div class="contact-shell">', unsafe_allow_html=True)
+left, right = st.columns([.9, 1.1], gap="large")
+
+with left:
+    st.markdown('<div class="section-kicker">GET IN TOUCH</div><div class="contact-title">Let’s build something useful with data.</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="contact-copy">I’m open to conversations around Data Analyst, Data Scientist and AI/ML opportunities, analytics projects and applied Generative AI work.</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        f'<div class="contact-links"><a href="mailto:{EMAIL}">✉ {EMAIL}</a><a href="tel:{PHONE.replace(" ", "")}">☎ {PHONE}</a><br><br><a href="{LINKEDIN}" target="_blank">LinkedIn ↗</a><a href="{GITHUB}" target="_blank">GitHub ↗</a></div>',
+        unsafe_allow_html=True,
+    )
+
+with right:
+    name = st.text_input("Name", placeholder="Your name", key="contact_name")
+    email = st.text_input("Email", placeholder="you@company.com", key="contact_email")
+    message = st.text_area("Message", placeholder="Tell me about the role or project...", height=145, key="contact_message")
+    if st.button("Send message ↗", key="send_message"):
+        if not name or not email or not message:
+            st.warning("Please fill in your name, email and message.")
+        else:
+            try:
+                sender = st.secrets["EMAIL_ADDRESS"]
+                password = st.secrets["EMAIL_APP_PASSWORD"]
+                msg = EmailMessage()
+                msg["Subject"] = f"Portfolio Contact - {name}"
+                msg["From"] = sender
+                msg["To"] = EMAIL
+                msg["Reply-To"] = email
+                msg.set_content(f"New portfolio message\n\nName: {name}\nEmail: {email}\n\n{message}")
+                with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+                    smtp.login(sender, password)
+                    smtp.send_message(msg)
+                st.success("Message sent successfully. Thank you!")
+            except Exception as exc:
+                st.error("The message could not be sent. Please use the email or LinkedIn links instead.")
+
+st.markdown("</div></div>", unsafe_allow_html=True)
+
+# -------------------------------------------------------------------
+# Footer
+# -------------------------------------------------------------------
+st.markdown(
+    '<div class="footer">© 2026 Akshay Kumar · Data Analytics · Machine Learning · Generative AI</div>',
+    unsafe_allow_html=True,
+)
