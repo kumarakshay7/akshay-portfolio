@@ -73,3 +73,26 @@ footer{position:relative}
 .project-body{background:linear-gradient(180deg,rgba(9,13,19,.96),rgba(7,10,15,.98))}
 @media(max-width:850px){.visual{height:330px!important}}
 @media(max-width:600px){.visual{height:315px!important;padding:15px!important}.rag-canvas{transform:scale(.88);transform-origin:top left}.preview-foot{left:15px!important;right:15px!important}.preview-foot strong{display:none}}
+
+
+/* Project layout: project information first, visualization below */
+.grid .project{display:flex!important;flex-direction:column!important;overflow:hidden!important}
+.grid .project-body{order:1!important}
+.grid .project .visual{order:2!important;width:100%!important;box-sizing:border-box!important;border-radius:0 0 16px 16px!important;border-left:0!important;border-right:0!important;border-bottom:0!important;margin:0!important}
+.grid .project-body{padding:30px 30px 26px!important}
+.grid .project-body .num{display:block!important;margin-bottom:10px!important}
+.grid .project h3{margin-top:0!important;margin-bottom:7px!important;font-size:28px!important;line-height:1.12!important}
+.grid .project-body>p:not(.sub){max-width:720px!important}
+.grid .project .visual{height:285px!important}
+.grid .project .preview-head b{font-size:16px!important}
+.grid .project .preview-head{height:44px!important}
+.grid .project .preview-foot{bottom:12px!important}
+@media(max-width:850px){
+  .grid .project .visual{height:300px!important}
+  .grid .project-body{padding:25px 24px 23px!important}
+}
+@media(max-width:600px){
+  .grid .project h3{font-size:23px!important}
+  .grid .project .visual{height:305px!important}
+  .grid .project-body{padding:22px 20px!important}
+}
