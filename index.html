@@ -10,6 +10,24 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=20260920-2">
+<style>
+.image-caption{
+  position:absolute;
+  left:20px;
+  bottom:18px;
+  padding:6px 10px;
+  border:1px solid rgba(25,55,90,.18);
+  border-radius:6px;
+  background:rgba(255,255,255,.9);
+  color:#24496d;
+  font-size:10px;
+  letter-spacing:1.3px;
+  font-weight:800;
+}
+@media(max-width:600px){
+  .visual.project-preview[style*="height:420px"]{height:350px!important}
+}
+</style>
 </head>
 <body>
 <header class="nav">
@@ -72,37 +90,25 @@
   <p class="section-intro">A mix of professional case studies and public engineering projects, covering analytics, machine learning, Generative AI and automation.</p>
   <div class="grid">
     <article class="project">
-      <div class="visual visual-mmm project-preview">
-  <div class="preview-head"><span class="p-badge blue">01</span><div><b>Marketing Mix Modeling</b><small>Campaign performance analysis</small></div><span class="live-dot">ANALYTICS</span></div>
-  <div class="preview-grid">
-    <div class="preview-kpis"><div><span>Records</span><b>500K+</b></div><div><span>Model fit</span><b>R² 0.85</b></div><div><span>ROI uplift</span><b>+12%</b></div></div>
-    <div class="chart-card"><div class="chart-title"><b>Channel contribution</b><span>Sales impact</span></div><div class="hbars"><i><span>TV</span><em style="--w:92%"></em><small>32%</small></i><i><span>Digital</span><em style="--w:70%"></em><small>24%</small></i><i><span>Social</span><em style="--w:54%"></em><small>18%</small></i><i><span>Print</span><em style="--w:43%"></em><small>14%</small></i></div></div>
-    <div class="trend-card"><div class="chart-title"><b>Actual vs predicted</b><span>Monthly sales</span></div><svg viewBox="0 0 360 90" preserveAspectRatio="none"><polyline class="trend-blue" points="0,68 45,56 90,61 135,42 180,48 225,29 270,34 315,16 360,8"/><polyline class="trend-orange" points="0,73 45,59 90,64 135,47 180,52 225,35 270,39 315,21 360,13"/></svg></div>
-  </div>
-  <div class="preview-foot"><span>Python</span><span>OLS</span><span>VIF</span><span>Time Series</span><strong>Budget optimization</strong></div>
+      <div class="visual visual-mmm project-preview" style="height:420px;background:#f7fbff;padding:10px;">
+  <img src="assets/images/mmm.png" alt="Marketing Mix Modeling project visualization" loading="lazy">
+  <span class="image-caption">MARKETING ANALYTICS</span>
 </div>
       <div class="project-body"><span class="num">PROJECT 01</span><h3>Marketing Mix Modeling</h3><p class="sub">Budget allocation & ROI measurement</p><p>Built an end-to-end Marketing Mix Modeling workflow using OLS regression, feature engineering, VIF checks, validation and channel contribution analysis across 500K+ records and 5 marketing channels.</p><div class="tags"><span>Python</span><span>OLS Regression</span><span>Pandas</span><span>VIF</span><span>Time Series</span></div><div class="metrics"><b>500K+<small>records</small></b><b>R² 0.85<small>model fit</small></b><b>+25%<small>budget efficiency</small></b><b>+12%<small>ROI</small></b></div><span class="case">◆ Professional case study</span></div>
     </article>
 
     <article class="project">
-      <div class="visual visual-rag project-preview">
-  <div class="preview-head"><span class="p-badge green">02</span><div><b>Enterprise RAG AI Assistant</b><small>Document retrieval & grounded answers</small></div><span class="live-dot">GEN AI</span></div>
-  <div class="rag-flow"><span>Documents</span><i>→</i><span>Chunking</span><i>→</i><span>Embeddings</span><i>→</i><strong>Retrieval</strong><i>→</i><b>Response</b></div>
-  <div class="rag-answer"><div class="chat-dot">✦</div><div><b>Grounded answer</b><small>Retrieved context is passed to the language model before response generation.</small></div></div>
-  <div class="rag-services"><span>Azure OpenAI</span><span>Azure AI Search</span><span>LangChain</span><span>Streamlit</span></div>
-  <div class="preview-foot"><span>Vector Search</span><span>Semantic Search</span><span>Embeddings</span><strong>RAG pipeline</strong></div>
+      <div class="visual visual-rag project-preview" style="height:420px;background:#f7fbff;padding:10px;">
+  <img src="assets/images/rag.png" alt="Enterprise RAG AI Assistant project visualization" loading="lazy">
+  <span class="image-caption">GENERATIVE AI · RAG</span>
 </div>
       <div class="project-body"><span class="num">PROJECT 02</span><h3>Enterprise RAG AI Assistant</h3><p class="sub">Grounded document question answering</p><p>Implemented an enterprise RAG pipeline with document ingestion, chunking, embeddings, semantic/vector retrieval and grounded response generation using Azure OpenAI, Azure AI Search, LangChain and Streamlit.</p><div class="tags"><span>Azure OpenAI</span><span>Azure AI Search</span><span>LangChain</span><span>Embeddings</span><span>Streamlit</span></div><div class="metrics"><b>E2E<small>RAG pipeline</small></b><b>Vector<small>retrieval</small></b><b>Semantic<small>search</small></b><b>Grounded<small>responses</small></b></div><a class="case link" href="https://github.com/kumarakshay7/Azure-RAG-Assignments" target="_blank" rel="noopener">↗ View GitHub repository</a></div>
     </article>
 
     <article class="project">
-      <div class="visual visual-cv project-preview">
-  <div class="preview-head"><span class="p-badge orange">03</span><div><b>Vehicle Detection & Tracking</b><small>Computer vision inference</small></div><span class="live-dot">VISION</span></div>
-  <div class="cv-real-preview">
-    <div class="camera-real"><img src="assets/images/vehicle.png" alt="Vehicle detection and tracking sample"><span class="detect d1">VEHICLE</span><span class="detect d2">DETECTED</span><div class="camera-label">IMAGE / VIDEO INPUT</div></div>
-    <div class="cv-info"><div class="info-title">VISION PIPELINE</div><div class="flow-stack"><span>Preprocessing</span><i>↓</i><span>YOLOv8 Detection</span><i>↓</i><span>OpenCV</span><i>↓</i><strong>Tracking + Inference</strong></div></div>
-  </div>
-  <div class="preview-foot"><span>Python</span><span>YOLOv8</span><span>OpenCV</span><span>Deep Learning</span><strong>Computer Vision</strong></div>
+      <div class="visual visual-cv project-preview" style="height:420px;background:#f7fbff;padding:10px;">
+  <img src="assets/images/vehicle.png" alt="Vehicle Detection and Tracking project visualization" loading="lazy">
+  <span class="image-caption">COMPUTER VISION</span>
 </div>
       <div class="project-body"><span class="num">PROJECT 03</span><h3>Vehicle Detection & Tracking</h3><p class="sub">YOLOv8-based video analytics</p><p>Built a computer vision workflow for vehicle detection and tracking using YOLOv8 and OpenCV, including image/video preprocessing, model training and inference.</p><div class="tags"><span>Python</span><span>YOLOv8</span><span>OpenCV</span><span>Deep Learning</span></div><div class="metrics"><b>YOLOv8<small>detector</small></b><b>Video<small>inference</small></b><b>OpenCV<small>vision</small></b><b>C5i<small>project</small></b></div><span class="case">◆ Professional case study</span></div>
     </article>
