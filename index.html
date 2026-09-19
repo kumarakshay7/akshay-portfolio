@@ -72,27 +72,63 @@
   <p class="section-intro">A mix of professional case studies and public engineering projects, covering analytics, machine learning, Generative AI and automation.</p>
   <div class="grid">
     <article class="project">
-      <div class="visual"><img src="assets/images/mmm.png" alt="Marketing Mix Modeling visualization"><label>MARKETING ANALYTICS</label></div>
+      <div class="visual visual-mmm">
+  <div class="visual-top"><span class="visual-number">01</span><div><b>Marketing Mix Modeling</b><small>Data-driven campaign optimization</small></div></div>
+  <div class="visual-objective"><span>◎</span><div><b>OBJECTIVE</b><small>Measure channel impact on sales and recommend optimized budgets.</small></div></div>
+  <div class="visual-panels">
+    <div class="mini-panel"><b>KEY HIGHLIGHTS</b><ul><li>500K+ records</li><li>OLS + VIF diagnostics</li><li>R² 0.85 model fit</li></ul></div>
+    <div class="mini-panel"><b>CHANNEL CONTRIBUTION</b><div class="bars"><i style="--w:92%">TV <em>32%</em></i><i style="--w:70%">Digital <em>24%</em></i><i style="--w:55%">Social <em>18%</em></i><i style="--w:43%">Print <em>14%</em></i></div></div>
+  </div>
+  <div class="visual-bottom"><div class="spark"><b>Actual vs Predicted Sales</b><svg viewBox="0 0 260 70" preserveAspectRatio="none"><polyline points="0,55 35,43 70,48 105,32 140,37 175,22 210,27 260,10"/></svg></div><div class="donut"><b>Budget Mix</b><span></span></div></div>
+  <label>MARKETING ANALYTICS</label>
+</div>
       <div class="project-body"><span class="num">PROJECT 01</span><h3>Marketing Mix Modeling</h3><p class="sub">Budget allocation & ROI measurement</p><p>Built an end-to-end Marketing Mix Modeling workflow using OLS regression, feature engineering, VIF checks, validation and channel contribution analysis across 500K+ records and 5 marketing channels.</p><div class="tags"><span>Python</span><span>OLS Regression</span><span>Pandas</span><span>VIF</span><span>Time Series</span></div><div class="metrics"><b>500K+<small>records</small></b><b>R² 0.85<small>model fit</small></b><b>+25%<small>budget efficiency</small></b><b>+12%<small>ROI</small></b></div><span class="case">◆ Professional case study</span></div>
     </article>
 
     <article class="project">
-      <div class="visual"><img src="assets/images/rag.png" alt="Enterprise RAG AI Assistant visualization"><label>GENERATIVE AI · RAG</label></div>
+      <div class="visual visual-rag">
+  <div class="visual-top"><span class="visual-number">02</span><div><b>Enterprise RAG AI Assistant</b><small>Intelligent document Q&A</small></div></div>
+  <div class="visual-objective"><span>◎</span><div><b>OBJECTIVE</b><small>Search enterprise documents and return grounded, context-aware answers.</small></div></div>
+  <div class="rag-flow"><span>Documents</span><i>→</i><span>Chunking</span><i>→</i><span>Embeddings</span><i>→</i><span>Azure AI Search</span><i>→</i><strong>Azure OpenAI</strong></div>
+  <div class="rag-answer"><div class="chat-dot">✦</div><div><b>Grounded response</b><small>Retrieved context → relevant answer → source-aware output</small></div></div>
+  <div class="visual-stats"><b>80%<small>faster access</small></b><b>70%<small>less manual search</small></b><b>Hybrid<small>vector + semantic</small></b></div>
+  <label>GENERATIVE AI · RAG</label>
+</div>
       <div class="project-body"><span class="num">PROJECT 02</span><h3>Enterprise RAG AI Assistant</h3><p class="sub">Grounded document question answering</p><p>Implemented an enterprise RAG pipeline with document ingestion, chunking, embeddings, semantic/vector retrieval and grounded response generation using Azure OpenAI, Azure AI Search, LangChain and Streamlit.</p><div class="tags"><span>Azure OpenAI</span><span>Azure AI Search</span><span>LangChain</span><span>Embeddings</span><span>Streamlit</span></div><div class="metrics"><b>E2E<small>RAG pipeline</small></b><b>Vector<small>retrieval</small></b><b>Semantic<small>search</small></b><b>Grounded<small>responses</small></b></div><a class="case link" href="https://github.com/kumarakshay7/Azure-RAG-Assignments" target="_blank" rel="noopener">↗ View GitHub repository</a></div>
     </article>
 
     <article class="project">
-      <div class="visual"><img src="assets/images/vehicle.png" alt="Vehicle detection and tracking visualization"><label>COMPUTER VISION</label></div>
+      <div class="visual visual-cv">
+  <div class="visual-top"><span class="visual-number">03</span><div><b>Vehicle Detection & Tracking</b><small>AI-powered visual analysis</small></div></div>
+  <div class="visual-objective"><span>◎</span><div><b>OBJECTIVE</b><small>Detect, classify and track vehicles from images and video feeds.</small></div></div>
+  <div class="cv-preview"><img src="assets/images/vehicle.png" alt="Vehicle detection and tracking sample"><span class="box car">CAR 0.92</span><span class="box bus">BUS 0.86</span><span class="box bike">BIKE 0.90</span></div>
+  <div class="cv-pipeline"><span>Video Input</span><i>→</i><span>YOLOv8</span><i>→</i><span>OpenCV Tracking</span><i>→</i><strong>Output</strong></div>
+  <div class="visual-stats"><b>92%<small>mAP shown</small></b><b>10K+<small>frames/images</small></b><b>4<small>vehicle classes</small></b></div>
+  <label>COMPUTER VISION</label>
+</div>
       <div class="project-body"><span class="num">PROJECT 03</span><h3>Vehicle Detection & Tracking</h3><p class="sub">YOLOv8-based video analytics</p><p>Built a computer vision workflow for vehicle detection and tracking using YOLOv8 and OpenCV, including image/video preprocessing, model training and inference.</p><div class="tags"><span>Python</span><span>YOLOv8</span><span>OpenCV</span><span>Deep Learning</span></div><div class="metrics"><b>YOLOv8<small>detector</small></b><b>Video<small>inference</small></b><b>OpenCV<small>vision</small></b><b>C5i<small>project</small></b></div><span class="case">◆ Professional case study</span></div>
     </article>
 
     <article class="project">
-      <div class="visual placeholder"><div>model → export → quantize<br><strong>FP32 → ONNX → INT8</strong><br>evaluate → analyze → verify</div><label>ML ENGINEERING</label></div>
+      <div class="visual visual-ml">
+  <div class="visual-top"><span class="visual-number">04</span><div><b>YOLO11 Model Optimization</b><small>Training · export · quantization</small></div></div>
+  <div class="visual-objective"><span>◎</span><div><b>OBJECTIVE</b><small>Evaluate an object detector through deployment-ready optimization steps.</small></div></div>
+  <div class="opt-flow"><div><b>FP32</b><small>Train</small></div><i>→</i><div><b>ONNX</b><small>Export</small></div><i>→</i><div><b>INT8</b><small>Quantize</small></div><i>→</i><div><b>VERIFY</b><small>Evaluate</small></div></div>
+  <div class="metric-bars"><span><b>Accuracy</b><i style="--h:82%"></i></span><span><b>Speed</b><i style="--h:66%"></i></span><span><b>Size</b><i style="--h:48%"></i></span><span><b>Quality</b><i style="--h:76%"></i></span></div>
+  <label>ML ENGINEERING</label>
+</div>
       <div class="project-body"><span class="num">PROJECT 04</span><h3>YOLO11 Model Optimization</h3><p class="sub">Training, ONNX export & INT8 evaluation</p><p>Completed an object-detection engineering workflow covering model training, evaluation, ONNX export, FP32 validation, INT8 quantization and failure analysis.</p><div class="tags"><span>YOLO11</span><span>PyTorch</span><span>ONNX</span><span>INT8</span><span>Python</span></div><div class="metrics"><b>YOLO11<small>model</small></b><b>ONNX<small>deployment</small></b><b>INT8<small>quantization</small></b><b>ML<small>evaluation</small></b></div><a class="case link" href="https://github.com/kumarakshay7/artikate-cv-ml-engineer-assignment" target="_blank" rel="noopener">↗ View GitHub repository</a></div>
     </article>
 
     <article class="project">
-      <div class="visual placeholder"><div>Power Apps<br>↓<br>Power Automate → SharePoint<br>↓<br>BI / Copilot Studio</div><label>POWER PLATFORM · BI</label></div>
+      <div class="visual visual-power">
+  <div class="visual-top"><span class="visual-number">05</span><div><b>Power Platform & BI Automation</b><small>Workflow automation & decision support</small></div></div>
+  <div class="visual-objective"><span>◎</span><div><b>OBJECTIVE</b><small>Connect apps, workflows, storage and BI into one operational loop.</small></div></div>
+  <div class="power-flow"><span>Power Apps</span><i>→</i><span>Power Automate</span><i>→</i><span>SharePoint</span><i>→</i><strong>Power BI</strong></div>
+  <div class="dashboard-mini"><div><b>1,245</b><small>Total Requests</small></div><div><b>892</b><small>Completed</small></div><div><b>253</b><small>In Progress</small></div><div><b>100</b><small>Pending</small></div></div>
+  <div class="trend"><b>MONTHLY TREND</b><svg viewBox="0 0 300 50" preserveAspectRatio="none"><polyline points="0,38 45,30 90,33 135,22 180,25 225,13 300,8"/><polyline class="line-two" points="0,45 45,38 90,40 135,31 180,34 225,25 300,18"/></svg></div>
+  <label>POWER PLATFORM · BI</label>
+</div>
       <div class="project-body"><span class="num">PROJECT 05</span><h3>Power Platform & BI Automation</h3><p class="sub">Workflow automation & decision support</p><p>Designed Power Apps and Power Automate solutions with SharePoint integration, Copilot Studio and BI reporting to streamline operational workflows and support faster decisions.</p><div class="tags"><span>Power Apps</span><span>Power Automate</span><span>SharePoint</span><span>Copilot Studio</span><span>Power BI</span></div><div class="metrics"><b>35%<small>workflow efficiency</small></b><b>8%<small>operational revenue</small></b><b>Power Apps<small>solutions</small></b><b>BI<small>reporting</small></b></div><span class="case">◆ Professional case study</span></div>
     </article>
   </div>
