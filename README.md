@@ -13,9 +13,9 @@ Live URL: https://kumarakshay7.github.io/akshay-portfolio/
 | Project | Focus | Repository |
 |---|---|---|
 | Marketing Mix Modeling | OLS regression, feature engineering, ROI and budget analysis | Professional case study |
-| Enterprise RAG AI Assistant | Azure OpenAI, Azure AI Search, LangChain, embeddings | [Azure-RAG-Assignments](https://github.com/kumarakshay7/Azure-RAG-Assignments) |
-| Vehicle Detection & Tracking | YOLOv8, OpenCV, deep learning | [computer-vision-yolo](https://github.com/kumarakshay7/computer-vision-yolo) |
-| YOLO11 Model Optimization | ONNX export, INT8 quantization, evaluation and failure analysis | [artikate-cv-ml-engineer-assignment](https://github.com/kumarakshay7/Computer-Vision-Model-Optimization-using-YOLO11) |
+| Enterprise RAG AI Assistant | Azure OpenAI, Azure AI Search, LangChain, embeddings | [Enterprise-RAG-AI-Assistant](https://github.com/kumarakshay7/Enterprise-RAG-AI-Assistant) |
+| Vehicle Detection & Tracking | YOLOv8, OpenCV, deep learning | [Vehicle Detection & Tracking](https://github.com/kumarakshay7/computer-vision-yolo) |
+| YOLO11 Model Optimization | ONNX export, INT8 quantization, evaluation and failure analysis | [Computer-Vision-Model-Optimization-using-YOLO11](https://github.com/kumarakshay7/Computer-Vision-Model-Optimization-using-YOLO11) |
 | Power Platform & BI Automation | Power Apps, Power Automate, SharePoint, Copilot Studio, Power BI | Professional case study |
 
 ## Tech stack
