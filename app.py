@@ -60,7 +60,7 @@ RESUME_DATA = RESUME_PATH.read_bytes() if RESUME_EXISTS else b""
 # repository URLs. The buttons are ready to use.
 PROJECT_REPOS = {
     "mmm": "https://github.com/",
-    "vehicle": "https://github.com/kumarakshay7/Annotation",
+    "vehicle": "https://github.com/kumarakshay7/computer-vision-yolo",
     "rag": "https://github.com/kumarakshay7/Azure-RAG-Assignment",
 }
 
@@ -1126,7 +1126,7 @@ projects = [
     },
     {
         "key": "vehicle",
-        "number": "PROJECT 02",
+        "number": "PROJECT 03",
         "category": "COMPUTER VISION",
         "title": "Vehicle Detection & Tracking",
         "tech": "Python · YOLOv8 · OpenCV · Deep Learning",
@@ -1145,7 +1145,7 @@ projects = [
     },
     {
         "key": "rag",
-        "number": "PROJECT 03",
+        "number": "PROJECT 02",
         "category": "GENERATIVE AI · RAG",
         "title": "Enterprise RAG AI Assistant",
         "tech": "LangChain · Azure OpenAI · Azure AI Search · GPT-4o · Streamlit",
